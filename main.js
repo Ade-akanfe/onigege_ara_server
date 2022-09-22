@@ -1,8 +1,9 @@
 //packages to be used
 const express = require("express")
-const nodemon = require("nodemon")
 require("dotenv").config()
 const bodyParser = require("body-parser")
+const user_route = require("./routes/user-route")
+
 //creating an instance of http
 const app = express()
 
@@ -12,6 +13,13 @@ const app = express()
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+//setting up routes
+
+app.use("/user", user_route)
+
+
+
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
