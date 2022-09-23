@@ -1,8 +1,10 @@
 //packages to be used
 const express = require("express")
+const path = require("path")
 require("dotenv").config()
 const bodyParser = require("body-parser")
 const user_route = require("./routes/user-route")
+const exam_route = require("./routes/exam-route")
 
 //creating an instance of http
 const app = express()
@@ -13,10 +15,15 @@ const app = express()
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json())
 
 //setting up routes
 
+app.use("/public", express.static(path.join(__dirname,"/public")))
 app.use("/user", user_route)
+app.use("/exam", exam_route)
+
+
 
 
 
@@ -33,7 +40,6 @@ app.use((req, res, next) => {
 
 //handles error
 app.use((error, req, res, next) => {
-    console.log(error);
     const status = error.status || 500;
     const message = error.message;
     res.status(status).json({ message: message });
