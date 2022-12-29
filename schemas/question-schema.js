@@ -19,5 +19,7 @@ const question_schema=new Schema({
         type:String,
         required:true
     }
+},{
+    timestamps:true
 })
 module.exports=question_schema

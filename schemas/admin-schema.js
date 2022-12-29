@@ -18,6 +18,12 @@ const admin_schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Token",
         required: true
+    },
+    question: {
+        type: String
+    },
+    answer: {
+        type: String
     }
 }, {
     timestamps: true

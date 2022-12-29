@@ -1,7 +1,8 @@
 const mongoose = require("mongoose")
+const { mongodb_connection } = require("../config")
 
 
-mongoose.connect(process.env.MONGODB_CONNECTION_STRING)
+mongoose.connect(mongodb_connection)
     .then(() => {
         console.log("Connection Successful")
     })

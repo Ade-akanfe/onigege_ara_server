@@ -16,6 +16,9 @@ const user_schema = new Schema({
     middlename: {
         type: String
     },
+    gender: {
+        type: String
+    },
     regNo: {
         required: true,
         type: String,
@@ -41,8 +44,8 @@ const user_schema = new Schema({
         ref: "Token"
     },
     class: {
-        required: true,
-        type: String
+        type: Schema.Types.ObjectId,
+        ref: "StudentClass"
     },
     type: {
         type: String,
@@ -51,6 +54,12 @@ const user_schema = new Schema({
     },
     time: {
         type: String,
+    },
+    class_teacher: {
+        type: Schema.Types.ObjectId,
+        ref: "Teacher"
     }
+}, {
+    timestamps: true
 })
 module.exports = user_schema

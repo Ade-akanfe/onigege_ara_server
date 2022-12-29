@@ -7,10 +7,7 @@ const exam_schema = new Schema({
         ref: "Subjects",
         required: true
     },
-    class: {
-        type: String,
-        required: true
-    },
+    class: [],
     questions: [
         {
             type: Schema.Types.ObjectId,
@@ -22,6 +19,8 @@ const exam_schema = new Schema({
         required: true
     },
     scores: []
+},{
+    timestamps:true
 })
 
 module.exports = exam_schema

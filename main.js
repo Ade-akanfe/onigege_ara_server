@@ -5,39 +5,25 @@ require("dotenv").config()
 const bodyParser = require("body-parser")
 const user_route = require("./routes/user-route")
 const exam_route = require("./routes/exam-route")
-
+const http = require("http")
 //creating an instance of http
 const app = express()
-
-
+const cors = require("cors")
+const { post_route } = require("./routes/post-route")
+const { port, allowed_domains } = require("./config/index")
 //registering middleware
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json())
-
-//setting up routes
-
-app.use("/public", express.static(path.join(__dirname,"/public")))
-app.use("/user", user_route)
-app.use("/exam", exam_route)
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors({ origin: allowed_domains }));
 
 
 
-
-
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader(
-        "Access-Control-Allow-Methods",
-        "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-    );
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    next();
-});
-
-
+app.use("/public", express.static(path.join(__dirname, "/public")))
+app.use("/api/user", user_route)
+app.use("/api/exam", exam_route)
+app.use("/api/post", post_route)
 //handles error
 app.use((error, req, res, next) => {
     const status = error.status || 500;
@@ -46,8 +32,14 @@ app.use((error, req, res, next) => {
 });
 
 
+const server = http.createServer(app)
 
-app.listen(process.env.PORT || 3000, () => {
+
+server.listen(port, () => {
+    const io = require('./socket').init(server);
+    io.on('connection', socket => {
+        console.log('Client connected');
+    });
     require("./utils/db")
     console.log("App Started")
 })
