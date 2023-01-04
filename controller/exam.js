@@ -311,7 +311,9 @@ const controller = {
             const exam_question = await question_model.find({ _id: { $in: exam_val.questions } })
             for (values of exam_question) {
                 const paths = path.join(process.cwd(), values.image)
-                deleteFile(paths)
+                if(paths){
+                    deleteFile(paths)
+                }
                 await question_model.findOneAndDelete({ _id: values._id })
             }
             await exam_model.findOneAndDelete({ _id: exam_val._id })

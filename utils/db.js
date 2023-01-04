@@ -10,3 +10,5 @@ mongoose.connect(mongodb_connection)
         console.log("An error has occured")
         console.log(error.message)
     })
+
+// mongoose.set("autoIndex", "true")

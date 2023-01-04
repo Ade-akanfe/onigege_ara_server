@@ -10,13 +10,14 @@ class ApiFeatures {
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt|regex)\b/g, match => '$' + match);
         this.query.find(JSON.parse(queryStr));
+        // console.log(this.query)
         return this;
     }
 
     sorting() {
         if (this.queryString.sort) {
             const sortBy = this.queryString.sort.split(',').join(' ');
-            console.log(sortBy)
+            
             this.query = this.query.sort(sortBy);
         }
         else {

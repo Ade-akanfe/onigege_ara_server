@@ -9,6 +9,7 @@ const Authorization = async (req, res, next) => {
     try {
         const authorization = req.get("Authorization")
         const refresh_token = req.get("RefreshToken")
+        const id = req.get("Id")  
         if (!(authorization || refresh_token || id)) {
             const error = new Error("Please Log in to continue")
             error.status = 300

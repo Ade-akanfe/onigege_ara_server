@@ -3,7 +3,8 @@ const Schema = mongoose.Schema
 const PostSchema = new Schema({
     title: {
         required: true,
-        type: String
+        type: String,
+        text: true
     },
     image: [],
     content: {

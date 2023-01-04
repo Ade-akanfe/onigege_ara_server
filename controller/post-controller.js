@@ -77,6 +77,35 @@ const PostController = {
             }
         })
     },
+    AllPost: async (req, res, next) => {
+        try {
+            const { page, title } = req.query
+            const pageNumber = parseInt(page)
+            let currentIndex
+            let features
+            let query;
+            let documents;
+            if (!title) {
+                documents = await post_model.countDocuments()
+                let currentNumber = (page ? page : 1) * (5)
+                currentIndex = currentNumber > documents ? documents : currentNumber
+                features = new ApiFeatures(post_model.find(), req.query).filtering().sorting().pagination();
+                query = await features.query;
+            } else {
+                documents = await post_model.countDocuments({ title: { $regex: title, $options: "i" } })
+                query = await post_model.find({ title: { $regex: title, $options: "i" } }).skip(pageNumber - 1).limit(5)
+                let currentNumber = (page ? page : 1) * (5)
+                currentIndex = currentNumber > documents ? documents : currentNumber
+            }
+            res.status(200).json({ posts: query, currentNumber: currentIndex, allPosts: documents })
+        }
+        catch (error) {
+            if (!error.status) {
+                error.status = 500
+            }
+            res.status(error.status).json({ message: error.message })
+        }
+    },
     readAllPost: async (req, res, next) => {
         try {
             const { page, limit, title } = req.query
@@ -91,7 +120,7 @@ const PostController = {
                 features = new ApiFeatures(post_model.find(), req.query).filtering().sorting().pagination();
                 query = await features.query;
             } else {
-                features = new ApiFeatures(student_model.find({
+                features = new ApiFeatures(post_model.find({
                     $or:
                         [
                             { "title": { $regex: `${title}`, $options: "i" } },
@@ -118,9 +147,10 @@ const PostController = {
             if (!post) {
                 return next({ message: "Post not found", status: 400 })
             }
-            res.status(200).json({ post })
+            const similarPost = await post_model.find({ _id: { $ne: id } })
+            res.status(200).json({ post, similarPost })
         }
-        catch {
+        catch (error) {
             if (!error.status) {
                 error.status = 500
             }
@@ -129,16 +159,16 @@ const PostController = {
     },
     editSinglePost: async (req, res, next) => {
         try {
-            const { content, title } = res.body
+            const { content, title } = req.body
             const { id } = req.params
             const post = await post_model.findOne({ _id: id })
             if (!post) {
                 return next({ message: error.message, status: 400 })
             }
             await post_model.updateOne({ _id: id }, { $set: { content: content.trim(), title: title.trim() } })
-            res.status(200).json({ token: req.token, refresh_token: req.refresh_token })
+            res.status(200).json({ token: req.token, refresh_token: req.refresh_token,id:req.user._id })
         }
-        catch {
+        catch (error) {
             if (!error.status) {
                 error.status = 500
             }
@@ -191,6 +221,18 @@ const PostController = {
             res.status(200).json({ token: req.token, refresh_token: req.refresh_token })
         }
         catch {
+            if (!error.status) {
+                error.status = 500
+            }
+            res.status(error.status).json({ message: error.message })
+        }
+    },
+    HomePagePost: async (req, res, next) => {
+        try {
+            const posts = await post_model.find().limit(2).sort("createdAt")
+            res.status(200).json({ posts })
+        }
+        catch (error) {
             if (!error.status) {
                 error.status = 500
             }
