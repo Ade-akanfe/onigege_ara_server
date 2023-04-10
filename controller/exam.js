@@ -12,7 +12,7 @@ const teacher_model = require("../models/teacher-model")
 const createExcelFile = require("../utils/convert")
 const mime = require("mime")
 const ApiFeatures = require("../utils/sort")
-
+const uploader = require("../utils/cloudinary")
 
 
 const fileStorage = multer.diskStorage({
@@ -106,7 +106,7 @@ const controller = {
                 }
             }
 
-            const exam = new exam_model({ subject: subjectId, class: exam_class, time })
+            const exam = new exam_model({ subject: subjectId, class: exam_class, time: time.includes(":") ? time : time + ":00" })
             if (req.type === 'Teacher') {
                 await teacher_model.updateOne({ _id: teacher._id },
                     { $push: { exams: [{ subject: subjectId, exam: exam._id, classes: exam_class }] } })
@@ -195,20 +195,29 @@ const controller = {
                     }
 
                     const answers = newVal.map(el => el.toUpperCase())
-
+                    let imageUrl;
+                    if (image) {
+                        imageUrl = await uploader(path.resolve(image.path), "exam")
+                    }
                     const questionVal = new question_model({
                         answers: answers,
                         exam: exam_id,
-                        image: image ? image.path : "",
+                        image: image ? imageUrl.secure_url : "",
                         correct_answer: answer.toUpperCase(),
                         question
                     })
+
                     await questionVal.save()
                     await exam_model.updateOne({ _id: exam_id }, { $push: { questions: questionVal._id } })
                     const exam = await exam_model.findOne({ _id: exam_id }).select("questions")
+                    if (image) {
+                        const paths = path.join(process.cwd(), image.path)
+                        deleteFile(paths)
+                    }
                     res.status(200).json({ refresh_token: req.refresh_token, token: req.token, length: exam.questions.length })
                 }
             } catch (error) {
+                console.log(error)
                 if (req.file) {
                     const paths = path.join(process.cwd(), req.file.path)
                     deleteFile(paths)
@@ -216,7 +225,7 @@ const controller = {
                 if (!error.status) {
                     error.status = 500
                 }
-                res.status(error.status).json({ message: error.message })
+                res.status(error.status).json({ message: error.message ? error.message : "Something went wrong, please try again later" })
             }
         })
     },
@@ -311,7 +320,7 @@ const controller = {
             const exam_question = await question_model.find({ _id: { $in: exam_val.questions } })
             for (values of exam_question) {
                 const paths = path.join(process.cwd(), values.image)
-                if(paths){
+                if (paths) {
                     deleteFile(paths)
                 }
                 await question_model.findOneAndDelete({ _id: values._id })
@@ -500,7 +509,7 @@ const controller = {
             console.log(user)
             console.log(cpx_exam)
             const current_question = cpx_exam[current_question_index - 1]
-            
+
             console.log(current_question)
             const full_question = await question_model.findOne({ _id: current_question._id }).select("-correct_answer")
 

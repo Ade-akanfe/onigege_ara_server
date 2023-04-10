@@ -35,15 +35,10 @@ app.use((error, req, res, next) => {
     res.status(status).json({ message: message });
 });
 
-
 const server = http.createServer(app)
 
 
 server.listen(port, () => {
-    const io = require('./socket').init(server);
-    io.on('connection', socket => {
-        console.log('Client connected');
-    });
     require("./utils/db")
     console.log("App Started")
 })

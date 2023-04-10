@@ -1,0 +1,27 @@
+version: '3.6'
+
+services:
+  ogac-backend-api:
+    container_name: backend
+    command: npm run dev
+    build: ./
+    working_dir: /app
+    ports: 
+     - "4000:4000"
+    environment:
+     - JWT_SECRET="#12WMDKJ3RTU649403'Slrkasrm[RAFOAJENADJABN]"
+     - SALT_ROUND=12
+     - PORT=4000
+     - MONGODB_CONNECTION_STRING= mongodb+srv://Ademola-pamilerin:Adeakanfe123@cluster0.lpfabcf.mongodb.net/?retryWrites=true&w=majority
+     - LOCAL_MONGODB_CONNECTION = "mongodb://127.0.0.1:27017/Ademola"
+     - NODE_ENV = development
+    links:
+     - mongo
+    volumes:
+      - ./:/app
+
+  mongo:
+    container_name: mongo
+    image: mongo  
+    ports:
+      - "27017:27017"

@@ -5,6 +5,8 @@ const { validationResult } = require("express-validator")
 const multer = require("multer")
 const { deleteFile } = require("../utils/file")
 const fs = require("fs")
+const uploader = require("../utils/cloudinary")
+
 
 
 const fileStorage = multer.diskStorage({
@@ -46,7 +48,6 @@ const PostController = {
                 } else {
                     const image = req.file
                     const { content, title } = req.body
-                    console.log(req.body)
                     const errors = validationResult(req)
                     if (!title) {
                         return next({ message: "All fields are required", status: 500 })
@@ -54,16 +55,25 @@ const PostController = {
                     if (!content) {
                         return next({ message: "All fields are required", status: 500 })
                     }
+                    let imageUrl;
+                    if (image) {
+                        imageUrl = await uploader(path.resolve(image.path), "Posts")
+                    }
                     const post = new post_model({
                         content: content.trim(),
-                        image: image ? image : "",
+                        image: image ? imageUrl.secure_url : "",
                         title: title.trim()
                     })
                     await post.save()
+                    if (image) {
+                        const paths = path.join(process.cwd(), image.path)
+                        deleteFile(paths)
+                    }
                     res.status(200).json({ token: req.token, refresh_token: req.refresh_token, id: req.user._id })
                 }
             }
             catch (error) {
+
                 if (req.files) {
                     req.files.forEach(el => {
                         const paths = path.join(process.cwd(), el.path)
@@ -72,8 +82,10 @@ const PostController = {
                 }
                 if (!error.status) {
                     error.status = 500
+                    res.status(error.status).json({ messsage: error.message ? error.message : "Something went wrong" })
+                } else {
+                    console.log(error.message)
                 }
-                res.status(error.status).json({ messsage: error.message })
             }
         })
     },
@@ -166,7 +178,7 @@ const PostController = {
                 return next({ message: error.message, status: 400 })
             }
             await post_model.updateOne({ _id: id }, { $set: { content: content.trim(), title: title.trim() } })
-            res.status(200).json({ token: req.token, refresh_token: req.refresh_token,id:req.user._id })
+            res.status(200).json({ token: req.token, refresh_token: req.refresh_token, id: req.user._id })
         }
         catch (error) {
             if (!error.status) {
