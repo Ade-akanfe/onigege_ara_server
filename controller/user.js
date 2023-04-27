@@ -45,7 +45,7 @@ const controller = {
                 refresh_token
             })
             new_student.token = token_data._id
-            const teacher = await teacher_model.findOne({ class: student_class, $in: { roles: "CLASS TEACHER" } })
+            // const teacher = await teacher_model.findOne({ class: student_class, roles:{ $in: { roles: "CLASS TEACHER" } }})
             await class_model.updateOne({ _id: class_doc._id }, { $push: { students: new_student._id } })
             await token_data.save()
             await new_student.save()

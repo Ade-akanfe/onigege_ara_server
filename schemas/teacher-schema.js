@@ -33,7 +33,8 @@ const teacher_schema = new Schema({
     roles: [
         {
             type: String,
-            enum: ["CLASS TEACHER", "HOD"]
+            enum: ["","CLASS TEACHER", "HOD"],
+            default:""
         }
     ],
     students: [],
